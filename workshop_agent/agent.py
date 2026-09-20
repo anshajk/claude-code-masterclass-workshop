@@ -2,10 +2,9 @@ from google.adk import Agent
 
 from .tools import build_agenda, find_module
 
-
 root_agent = Agent(
     name="workshop_guide",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash-lite",
     description="Helps developers explore an agent-engineering workshop.",
     instruction=(
         "Help developers choose workshop modules and build a suitable agenda. "
