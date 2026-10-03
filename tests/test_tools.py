@@ -31,3 +31,12 @@ def test_build_agenda_rejects_short_session() -> None:
         "status": "error",
         "error_message": "At least 20 minutes are required.",
     }
+
+
+def test_build_agenda_filters_by_completed_prerequisites() -> None:
+    result = build_agenda(
+        "intermediate", 60, completed_prerequisites=["Python", "pytest"]
+    )
+
+    assert result["status"] == "success"
+    assert [module["topic"] for module in result["modules"]] == ["debugging"]
