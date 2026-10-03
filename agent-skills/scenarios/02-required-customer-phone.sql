@@ -1,0 +1,2 @@
+ALTER TABLE customers
+ADD COLUMN phone TEXT NOT NULL;

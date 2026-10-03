@@ -1,11 +1,19 @@
-# Claude Code masterclass workshop
+# Ergosphere Labs masterclass workshops
 
-This repository contains the hands-on Google Agent Development Kit (ADK)
-project used in the
-[Ergosphere Labs Claude Code masterclass](https://ergospherelabs.com/masterclasses/claude-code/).
-It is intentionally small enough to understand during a live session and
-includes deterministic exercises for repository orientation, debugging, and
-feature delivery.
+This repository contains the hands-on projects for two Ergosphere Labs
+masterclasses:
+
+| Masterclass | Workshop |
+|---|---|
+| [Claude Code](https://ergospherelabs.com/masterclasses/claude-code/) | Google Agent Development Kit project at the repository root |
+| Agent Skills | SQLite queries and safe migration skill under [`agent-skills/`](agent-skills/) |
+
+Each workshop is intentionally small, deterministic, and resettable.
+
+## Claude Code workshop
+
+The root project covers repository orientation, debugging, and feature
+delivery with Google ADK.
 
 ## Prerequisites
 
@@ -73,3 +81,27 @@ The reset script changes only:
 6. Compare the result with the supplied checkpoints.
 
 The dependencies are pinned so the workshop behavior remains predictable.
+
+## Agent Skills workshop
+
+The [`agent-skills/`](agent-skills/) track builds a
+`safe-sqlite-migrations` skill that:
+
+- inspects a seeded local SQLite database;
+- answers targeted questions through a read-only connection;
+- validates migration SQL against a temporary copy; and
+- reports invalid constraints and populated data at risk.
+
+Start the exercise with:
+
+```sh
+cd agent-skills
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+python scripts/setup_database.py
+python scripts/restore_checkpoint.py starter
+```
+
+See [`agent-skills/README.md`](agent-skills/README.md) for the complete
+exercise and checkpoint flow.
