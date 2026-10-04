@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
   issues: read
   id-token: write
 
@@ -18,13 +18,16 @@ jobs:
   review:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out pull request
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
+      # The /code-review:code-review plugin command is a defect-only reviewer with a
+      # fixed output contract, so the overview and Mermaid diagram are produced by the
+      # separate step below rather than by appending instructions to the command.
       - name: Review pull request with Claude
         uses: anthropics/claude-code-action@v1
         with:
@@ -33,8 +36,50 @@ jobs:
           plugins: code-review@claude-code-plugins
           prompt: >-
             /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
-            Review this pull request for correctness and maintainability. Include a concise overview of what changed and any helpful details for understanding the change. Add a Mermaid diagram as well, whenever possible
           claude_args: |
             --model claude-haiku-4-5
             --max-turns 25
-            --allowedTools "mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*)"
+
+      - name: Post change overview and Mermaid diagram
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Post exactly one top-level PR comment that explains this change to a reviewer.
+
+            Steps:
+            1. Run `gh pr view ${{ github.event.pull_request.number }}` and
+               `gh pr diff ${{ github.event.pull_request.number }}` to understand the change.
+               The PR branch is already checked out in the working directory.
+            2. Post the comment with `gh pr comment`, using this exact structure:
+
+            ## Change overview
+
+            <2-4 sentences on what changed and why it matters to a reviewer>
+
+            ## Diagram
+
+            ```mermaid
+            <diagram>
+            ```
+
+            Requirements for the diagram:
+            - The Mermaid diagram is REQUIRED. Always include one, even for small changes.
+            - Pick the diagram type that best fits the change: `flowchart` for control or data
+              flow, `sequenceDiagram` for cross-component interactions, `classDiagram` or
+              `erDiagram` for structural and schema changes.
+            - Diagram only the behaviour touched by this PR, not the whole system.
+            - Keep it under about 15 nodes so it stays readable.
+            - Quote node labels containing spaces or punctuation, e.g. `A["load config"]`,
+              so GitHub renders the diagram instead of a parse error.
+
+            Do not review for bugs or post inline comments; a separate step already does that.
+            Do not output the review as a chat message - the `gh pr comment` call is the deliverable.
+          claude_args: |
+            --model claude-haiku-4-5
+            --max-turns 15
+            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
