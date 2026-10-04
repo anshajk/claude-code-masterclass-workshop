@@ -55,7 +55,11 @@ jobs:
             1. Run `gh pr view ${{ github.event.pull_request.number }}` and
                `gh pr diff ${{ github.event.pull_request.number }}` to understand the change.
                The PR branch is already checked out in the working directory.
-            2. Post the comment with `gh pr comment`, using this exact structure:
+            2. Write the comment body to `/tmp/overview.md` and post it with
+               `gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/overview.md`.
+               Use a file rather than `--body` so the fenced Mermaid block survives shell quoting.
+
+            Use this exact structure for the body:
 
             ## Change overview
 
@@ -78,8 +82,8 @@ jobs:
               so GitHub renders the diagram instead of a parse error.
 
             Do not review for bugs or post inline comments; a separate step already does that.
-            Do not output the review as a chat message - the `gh pr comment` call is the deliverable.
+            Do not output the review as a chat message - the posted comment is the deliverable.
           claude_args: |
             --model claude-haiku-4-5
             --max-turns 15
-            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "Read,Glob,Grep,Write,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
