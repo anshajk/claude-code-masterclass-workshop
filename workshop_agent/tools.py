@@ -21,12 +21,17 @@ def find_module(topic: str) -> dict:
     }
 
 
-def build_agenda(level: str, duration_minutes: int) -> dict:
+def build_agenda(
+    level: str,
+    duration_minutes: int,
+    completed_prerequisites: list[str] | None = None,
+) -> dict:
     """Build a deterministic workshop agenda.
 
     Args:
         level: Learner level: beginner or intermediate.
         duration_minutes: Available workshop time in minutes.
+        completed_prerequisites: Prerequisites the learner has completed.
     """
     normalized_level = level.strip().lower()
     if normalized_level not in {"beginner", "intermediate"}:
@@ -45,6 +50,10 @@ def build_agenda(level: str, duration_minutes: int) -> dict:
         for topic, module in MODULES.items()
         if module["complexity"] == normalized_level
         and module["minutes"] <= duration_minutes
+        and (
+            completed_prerequisites is None
+            or set(module["prerequisites"]).issubset(completed_prerequisites)
+        )
     ]
     return {
         "status": "success",

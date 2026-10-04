@@ -24,6 +24,12 @@ def test_build_beginner_agenda() -> None:
     assert [module["topic"] for module in result["modules"]] == ["foundations"]
 
 
+def test_build_agenda_includes_only_modules_with_completed_prerequisites() -> None:
+    result = build_agenda("intermediate", 60, completed_prerequisites=["Python", "pytest"])
+
+    assert [module["topic"] for module in result["modules"]] == ["debugging"]
+
+
 def test_build_agenda_rejects_short_session() -> None:
     result = build_agenda("beginner", 10)
 
