@@ -4,5 +4,6 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .adk/
+.claude/
 .env
 **/.env
